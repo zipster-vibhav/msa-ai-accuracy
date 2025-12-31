@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Experiment Comparison</title>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+        background: linear-gradient(
+          135deg,
+          #0f0f1a 0%,
+          #1a1a2e 50%,
+          #16213e 100%
+        );
+        min-height: 100vh;
+        color: #e4e4e7;
+      }
+
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem;
+      }
+
+      header {
+        text-align: center;
+        margin-bottom: 2rem;
+        padding: 2rem 0;
+      }
+
+      h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: linear-gradient(
+          135deg,
+          #60a5fa 0%,
+          #a78bfa 50%,
+          #f472b6 100%
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.5rem;
+      }
+
+      .subtitle {
+        color: #71717a;
+        font-size: 1rem;
+      }
+
+      .stats-bar {
+        display: flex;
+        justify-content: center;
+        gap: 3rem;
+        margin: 1.5rem 0;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      .stat {
+        text-align: center;
+      }
+
+      .stat-value {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #60a5fa;
+      }
+
+      .stat-label {
+        font-size: 0.75rem;
+        color: #71717a;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .chart-container {
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+      }
+
+      #chart {
+        width: 100%;
+        height: 600px;
+      }
+
+      .legend {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        margin-top: 1rem;
+        font-size: 0.875rem;
+        color: #a1a1aa;
+      }
+
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .legend-color {
+        width: 12px;
+        height: 12px;
+        border-radius: 3px;
+      }
+
+      .info-text {
+        text-align: center;
+        color: #52525b;
+        font-size: 0.875rem;
+        margin-top: 1rem;
+      }
+
+      .experiment-table {
+        margin-top: 2rem;
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        overflow-x: auto;
+        overflow-y: visible;
+      }
+
+      .highlight-row {
+        animation: highlightFade 2.5s ease-out;
+      }
+
+      @keyframes highlightFade {
+        0% {
+          background: rgba(96, 165, 250, 0.4);
+        }
+        50% {
+          background: rgba(96, 165, 250, 0.2);
+        }
+        100% {
+          background: transparent;
+        }
+      }
+
+      .table-header {
+        padding: 1rem 1.5rem;
+        background: rgba(255, 255, 255, 0.03);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      .table-header h2 {
+        font-size: 1.25rem;
+        font-weight: 600;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        white-space: nowrap;
+      }
+
+      th,
+      td {
+        padding: 1rem 1.5rem;
+        text-align: left;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      }
+
+      /* Column widths */
+      th:nth-child(1),
+      td:nth-child(1) {
+        min-width: 200px;
+        max-width: 200px;
+      } /* Experiment Name */
+      th:nth-child(2),
+      td:nth-child(2) {
+        min-width: 100px;
+      } /* Accuracy */
+      th:nth-child(3),
+      td:nth-child(3) {
+        min-width: 100px;
+      } /* Avg Score */
+      th:nth-child(4),
+      td:nth-child(4) {
+        min-width: 120px;
+      } /* Chunk Accuracy */
+      th:nth-child(5),
+      td:nth-child(5) {
+        min-width: 80px;
+      } /* Latency */
+      th:nth-child(6),
+      td:nth-child(6) {
+        min-width: 180px;
+      } /* Technology */
+      th:nth-child(7),
+      td:nth-child(7) {
+        min-width: 120px;
+      } /* Parsing */
+      th:nth-child(8),
+      td:nth-child(8) {
+        min-width: 120px;
+      } /* Stemming */
+      th:nth-child(9),
+      td:nth-child(9) {
+        min-width: 120px;
+      } /* Combination */
+      th:nth-child(10),
+      td:nth-child(10) {
+        min-width: 180px;
+      } /* Query Type */
+      th:nth-child(11),
+      td:nth-child(11) {
+        min-width: 300px;
+        white-space: normal;
+      } /* Description */
+      th:nth-child(12),
+      td:nth-child(12) {
+        min-width: 80px;
+      } /* Link */
+
+      th {
+        font-weight: 600;
+        color: #a1a1aa;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      td {
+        font-size: 0.875rem;
+      }
+
+      tr:hover {
+        background: rgba(255, 255, 255, 0.02);
+      }
+
+      .accuracy-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-weight: 600;
+        font-size: 0.875rem;
+      }
+
+      .accuracy-high {
+        background: rgba(34, 197, 94, 0.15);
+        color: #4ade80;
+      }
+
+      .accuracy-medium {
+        background: rgba(250, 204, 21, 0.15);
+        color: #facc15;
+      }
+
+      .accuracy-low {
+        background: rgba(239, 68, 68, 0.15);
+        color: #f87171;
+      }
+
+      .link {
+        color: #60a5fa;
+        text-decoration: none;
+        transition: color 0.2s;
+      }
+
+      .link:hover {
+        color: #93c5fd;
+        text-decoration: underline;
+      }
+
+      .experiment-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .experiment-description {
+        white-space: normal;
+        word-wrap: break-word;
+      }
+
+      .generated-at {
+        text-align: center;
+        color: #3f3f46;
+        font-size: 0.75rem;
+        margin-top: 2rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>Experiment Comparison</h1>
+        <p class="subtitle">LangSmith Evaluation Metrics</p>
+
+        <div class="stats-bar">
+          <div class="stat">
+            <div class="stat-value">10</div>
+            <div class="stat-label">Experiments</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">76%</div>
+            <div class="stat-label">Base Accuracy</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">87%</div>
+            <div class="stat-label">Best Accuracy</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">97%</div>
+            <div class="stat-label">Best Chunk Accuracy</div>
+          </div>
+        </div>
+      </header>
+
+      <div class="chart-container">
+        <div id="chart"></div>
+        <p class="info-text">
+          Hover over bars to see detailed experiment information • Click to
+          scroll to experiment in table
+        </p>
+      </div>
+
+      <div class="experiment-table">
+        <div class="table-header">
+          <h2>Experiment Details</h2>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Experiment Name</th>
+              <th>Accuracy</th>
+              <th>Avg Score</th>
+              <th>Chunk Accuracy</th>
+              <th>Latency</th>
+              <th>Technology</th>
+              <th>Parsing</th>
+              <th>Stemming</th>
+              <th>Combination</th>
+              <th>Query Type</th>
+              <th>Description</th>
+              <th>Link</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr id="row-v4_10-e1c13461" data-experiment="v4_10-e1c13461">
+              <td class="experiment-name" title="v4_10-e1c13461">
+                v4_10-e1c13461
+              </td>
+              <td><span class="accuracy-badge accuracy-high">87%</span></td>
+              <td>87.4%</td>
+              <td>97.1%</td>
+              <td>121.6s</td>
+              <td>In memory vector store</td>
+              <td>Reducto section chunking</td>
+              <td>PorterStemmer</td>
+              <td>RFF</td>
+              <td>Keyword + Key phrase + Semantic Search</td>
+              <td>—</td>
+              <td>
+                <a
+                  href="https://langsmith.langchain.ziphq.net/o/8bbf9b31-eeef-404e-be80-30c5fc7dfcfd/datasets/771a2701-e628-44df-baf7-b23c09dae3bc/compare?selectedSessions=2f512fab-88df-4d2f-a25d-69cb35f9aba7&baseline=undefined"
+                  target="_blank"
+                  class="link"
+                  >View →</a
+                >
+              </td>
+            </tr>
+
+            <tr
+              id="row-v4_8_es_reducto_section_chunking_k_5-e2fbdf19"
+              data-experiment="v4_8_es_reducto_section_chunking_k_5-e2fbdf19"
+            >
+              <td
+                class="experiment-name"
+                title="v4_8_es_reducto_section_chunking_k_5-e2fbdf19"
+              >
+                v4_8_es_reducto_section_chunking_k_5-e2fbdf19
+              </td>
+              <td><span class="accuracy-badge accuracy-high">85.9%</span></td>
+              <td>87.0%</td>
+              <td>96.9%</td>
+              <td>78.4s</td>
+              <td>Opensearch ES</td>
+              <td>Reducto section chunking(k=5)</td>
+              <td>None</td>
+              <td>RFF</td>
+              <td>Keyword + Key phrase + Semantic Search</td>
+              <td>—</td>
+              <td>
+                <a
+                  href="https://langsmith.langchain.ziphq.net/o/8bbf9b31-eeef-404e-be80-30c5fc7dfcfd/datasets/771a2701-e628-44df-baf7-b23c09dae3bc/compare?selectedSessions=271b88dd-5d66-41f5-8b41-4d9c75b34223&baseline=undefined"
+                  target="_blank"
+                  class="link"
+                  >View →</a
+                >
+              </td>
+            </tr>
+
+            <tr
+              id="row-neighbour-es-pypdf-chunk-e7248cfa"
+              data-experiment="neighbour-es-pypdf-chunk-e7248cfa"
+            >
+              <td
+                class="experiment-name"
+                title="neighbour-es-pypdf-chunk-e7248cfa"
+              >
+                neighbour-es-pypdf-chunk-e7248cfa
+              </td>
+              <td><span class="accuracy-badge accuracy-medium">84.2%</span></td>
+              <td>85.4%</td>
+              <td>91.6%</td>
+              <td>97.3s</td>
+              <td>Opensearch ES</td>
+              <td>PyPDF Fixed chunking(existing Doc Search)</td>
+              <td>None</td>
+              <td>RFF</td>
+              <td>Keyword + Key phrase + Semantic Search</td>
+              <td>—</td>
+              <td>
+                <a
+                  href="https://langsmith.langchain.ziphq.net/o/8bbf9b31-eeef-404e-be80-30c5fc7dfcfd/datasets/771a2701-e628-44df-baf7-b23c09dae3bc/compare?selectedSessions=1b2d0794-df45-41b4-a155-fff6c786e45c&baseline=undefined"
+                  target="_blank"
+                  class="link"
+                  >View →</a
+                >
+              </td>
+            </tr>
+
+            <tr
+              id="row-more-updates-stemmer-negative-keywords"
+              data-experiment="more-updates-stemmer-negative-keywords"
+            >
+              <td
+                class="experiment-name"
+                title="more-updates-stemmer-negative-keywords"
+              >
+                more-updates-stemmer-negative-keywords
+              </td>
+              <td><span class="accuracy-badge accuracy-medium">80.5%</span></td>
+              <td>80.5%</td>
+              <td>—</td>
+              <td>52.6s</td>
+              <td>In memory vector store</td>
+              <td>—</td>
+              <td>PorterStemmer</td>
+              <td>—</td>
+              <td>—</td>
+              <td>Add negative keywords</td>
+              <td>
+                <a
+                  href="https://langsmith.langchain.ziphq.net/o/8bbf9b31-eeef-404e-be80-30c5fc7dfcfd/datasets/771a2701-e628-44df-baf7-b23c09dae3bc/compare?selectedSessions=11c835ae-8b0f-4fec-a48e-784fb0cabf81&baseline=undefined"
+                  target="_blank"
+                  class="link"
+                  >View →</a
+                >
+              </td>
+            </tr>
+
+            <tr
+              id="row-bm25_vector_rff-3d78c5c9"
+              data-experiment="bm25_vector_rff-3d78c5c9"
+            >
+              <td class="experiment-name" title="bm25_vector_rff-3d78c5c9">
+                bm25_vector_rff-3d78c5c9
+              </td>
+              <td><span class="accuracy-badge accuracy-medium">77.5%</span></td>
+              <td>77.5%</td>
+              <td>—</td>
+              <td>396.7s</td>
+              <td>In memory vector store</td>
+              <td>Reducto section chunking</td>
+              <td>—</td>
+              <td>RFF</td>
+              <td>Keyword + Semantic Search</td>
+              <td>—</td>
+              <td>
+                <a
+                  href="https://langsmith.langchain.ziphq.net/o/8bbf9b31-eeef-404e-be80-30c5fc7dfcfd/datasets/771a2701-e628-44df-baf7-b23c09dae3bc/compare?selectedSessions=c7c5a4d0-384c-4e3d-8d10-541fa938d6a4&baseline=undefined"
+                  target="_blank"
+                  class="link"
+                  >View →</a
+                >
+              </td>
+            </tr>
+
+            <tr
+              id="row-clm-docs-parsing-f6160119"
+              data-experiment="clm-docs-parsing-f6160119"
+            >
+              <td class="experiment-name" title="clm-docs-parsing-f6160119">
+                clm-docs-parsing-f6160119
+              </td>
+              <td><span class="accuracy-badge accuracy-medium">76.1%</span></td>
+              <td>76.1%</td>
+              <td>—</td>
+              <td>235.1s</td>
+              <td>Entire document to Open AI</td>
+              <td>PyPDF</td>
+              <td>—</td>
+              <td>—</td>
+              <td>—</td>
+              <td>—</td>
+              <td>
+                <a
+                  href="https://langsmith.langchain.ziphq.net/o/8bbf9b31-eeef-404e-be80-30c5fc7dfcfd/datasets/771a2701-e628-44df-baf7-b23c09dae3bc/compare?selectedSessions=cabafa44-6924-45f4-8731-c34b5cf71bab&baseline=undefined"
+                  target="_blank"
+                  class="link"
+                  >View →</a
+                >
+              </td>
+            </tr>
+
+            <tr
+              id="row-es-rag-reducto-section-chunking-k_5-rff-c6383376"
+              data-experiment="es-rag-reducto-section-chunking-k_5-rff-c6383376"
+            >
+              <td
+                class="experiment-name"
+                title="es-rag-reducto-section-chunking-k_5-rff-c6383376"
+              >
+                es-rag-reducto-section-chunking-k_5-rff-c6383376
+              </td>
+              <td><span class="accuracy-badge accuracy-medium">73.0%</span></td>
+              <td>73.0%</td>
+              <td>—</td>
+              <td>128.5s</td>
+              <td>Opensearch ES</td>
+              <td>Reducto</td>
+              <td>—</td>
+              <td>RFF</td>
+              <td>Keyword + Semantic Search</td>
+              <td>—</td>
+              <td>
+                <a
+                  href="https://langsmith.langchain.ziphq.net/o/8bbf9b31-eeef-404e-be80-30c5fc7dfcfd/datasets/771a2701-e628-44df-baf7-b23c09dae3bc/compare?selectedSessions=f0502448-1d7e-46f5-8d76-ac433ff79ad6&baseline=undefined"
+                  target="_blank"
+                  class="link"
+                  >View →</a
+                >
+              </td>
+            </tr>
+
+            <tr
+              id="row-es-rag-pypdf-chunking-k_10-3b16ded5"
+              data-experiment="es-rag-pypdf-chunking-k_10-3b16ded5"
+            >
+              <td
+                class="experiment-name"
+                title="es-rag-pypdf-chunking-k_10-3b16ded5"
+              >
+                es-rag-pypdf-chunking-k_10-3b16ded5
+              </td>
+              <td><span class="accuracy-badge accuracy-low">64.0%</span></td>
+              <td>64.0%</td>
+              <td>—</td>
+              <td>37.2s</td>
+              <td>Opensearch ES</td>
+              <td>PyPDF chunking(k=10)</td>
+              <td>—</td>
+              <td>arithmetic mean</td>
+              <td>Keyword + Semantic Search</td>
+              <td>Vanilla RAG</td>
+              <td>
+                <a
+                  href="https://langsmith.langchain.ziphq.net/o/8bbf9b31-eeef-404e-be80-30c5fc7dfcfd/datasets/771a2701-e628-44df-baf7-b23c09dae3bc/compare?selectedSessions=096cf35e-7203-4cb3-a658-7fedb7c53905&baseline=undefined"
+                  target="_blank"
+                  class="link"
+                  >View →</a
+                >
+              </td>
+            </tr>
+
+            <tr
+              id="row-es-rag-reducto-section-chunking-k_5-ae9d7a66"
+              data-experiment="es-rag-reducto-section-chunking-k_5-ae9d7a66"
+            >
+              <td
+                class="experiment-name"
+                title="es-rag-reducto-section-chunking-k_5-ae9d7a66"
+              >
+                es-rag-reducto-section-chunking-k_5-ae9d7a66
+              </td>
+              <td><span class="accuracy-badge accuracy-low">63.6%</span></td>
+              <td>63.6%</td>
+              <td>—</td>
+              <td>51.6s</td>
+              <td>Opensearch ES</td>
+              <td>Reducto section chunking(k=5)</td>
+              <td>—</td>
+              <td>arithmetic mean</td>
+              <td>Keyword + Semantic Search</td>
+              <td>Vanilla RAG</td>
+              <td>
+                <a
+                  href="https://langsmith.langchain.ziphq.net/o/8bbf9b31-eeef-404e-be80-30c5fc7dfcfd/datasets/771a2701-e628-44df-baf7-b23c09dae3bc/compare?selectedSessions=288fcde0-35fb-4211-9476-d8e164def2c5&baseline=undefined"
+                  target="_blank"
+                  class="link"
+                  >View →</a
+                >
+              </td>
+            </tr>
+
+            <tr
+              id="row-es-rag-reducto-variable-chunking-k_10-99bdab72"
+              data-experiment="es-rag-reducto-variable-chunking-k_10-99bdab72"
+            >
+              <td
+                class="experiment-name"
+                title="es-rag-reducto-variable-chunking-k_10-99bdab72"
+              >
+                es-rag-reducto-variable-chunking-k_10-99bdab72
+              </td>
+              <td><span class="accuracy-badge accuracy-low">61.9%</span></td>
+              <td>61.9%</td>
+              <td>—</td>
+              <td>36.1s</td>
+              <td>Opensearch ES</td>
+              <td>Reducto variable chunking(k=10)</td>
+              <td>—</td>
+              <td>arithmetic mean</td>
+              <td>—</td>
+              <td>Vanilla RAG</td>
+              <td>
+                <a
+                  href="https://langsmith.langchain.ziphq.net/o/8bbf9b31-eeef-404e-be80-30c5fc7dfcfd/datasets/771a2701-e628-44df-baf7-b23c09dae3bc/compare?selectedSessions=40e0b13a-432d-4c6e-9472-3c567014937a&baseline=undefined"
+                  target="_blank"
+                  class="link"
+                  >View →</a
+                >
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="generated-at">Generated on 2025-12-31 14:34:57 UTC</p>
+    </div>
+
+    <script>
+      const names = [
+        "es-rag-reducto-variable-chunking-k_10-99bdab72",
+        "es-rag-reducto-section-chunking-k_5-ae9d7a66",
+        "es-rag-pypdf-chunking-k_10-3b16ded5",
+        "es-rag-reducto-section-chunking-k_5-rff-c6383376",
+        "clm-docs-parsing-f6160119",
+        "bm25_vector_rff-3d78c5c9",
+        "more-updates-stemmer-negative-keywords",
+        "neighbour-es-pypdf-chunk-e7248cfa",
+        "v4_8_es_reducto_section_chunking_k_5-e2fbdf19",
+        "v4_10-e1c13461",
+      ];
+      const accuracies = [
+        61.884891304347825, 63.57166666666666, 64.00055555555555,
+        73.01666666666668, 76.0870652173913, 77.48309523809525,
+        80.54849056603773, 84.21252525252527, 85.91828282828283,
+        86.54242424242426,
+      ];
+      const hoverTexts = [
+        "<span style='font-size:16px'><b>es-rag-reducto-variable-chunking-k_10-99bdab72</b></span><br><br><span style='font-size:13px; color:#93c5fd'>Technology: Opensearch ES | Parsing: Reducto variable chunking(k=10) | Combination: arithmetic mean | Note: Vanilla RAG</span><br><br><span style='font-size:14px'><b>Accuracy:</b> 61.88%</span><br><span style='font-size:14px'><b>Avg Score:</b> 61.88%</span><br><span style='font-size:14px'><b>Latency:</b> 36.1s</span>",
+        "<span style='font-size:16px'><b>es-rag-reducto-section-chunking-k_5-ae9d7a66</b></span><br><br><span style='font-size:13px; color:#93c5fd'>Technology: Opensearch ES | Parsing: Reducto section chunking(k=5) | Combination: arithmetic mean | Query: Keyword + Semantic Search | Note: Vanilla RAG</span><br><br><span style='font-size:14px'><b>Accuracy:</b> 63.57%</span><br><span style='font-size:14px'><b>Avg Score:</b> 63.57%</span><br><span style='font-size:14px'><b>Latency:</b> 51.6s</span>",
+        "<span style='font-size:16px'><b>es-rag-pypdf-chunking-k_10-3b16ded5</b></span><br><br><span style='font-size:13px; color:#93c5fd'>Technology: Opensearch ES | Parsing: PyPDF chunking(k=10) | Combination: arithmetic mean | Query: Keyword + Semantic Search | Note: Vanilla RAG</span><br><br><span style='font-size:14px'><b>Accuracy:</b> 64.00%</span><br><span style='font-size:14px'><b>Avg Score:</b> 64.00%</span><br><span style='font-size:14px'><b>Latency:</b> 37.2s</span>",
+        "<span style='font-size:16px'><b>es-rag-reducto-section-chunking-k_5-rff-c6383376</b></span><br><br><span style='font-size:13px; color:#93c5fd'>Technology: Opensearch ES | Parsing: Reducto | Combination: RFF | Query: Keyword + Semantic Search</span><br><br><span style='font-size:14px'><b>Accuracy:</b> 73.02%</span><br><span style='font-size:14px'><b>Avg Score:</b> 73.02%</span><br><span style='font-size:14px'><b>Latency:</b> 128.5s</span>",
+        "<span style='font-size:16px'><b>clm-docs-parsing-f6160119</b></span><br><br><span style='font-size:13px; color:#93c5fd'>Technology: Entire document to Open AI | Parsing: PyPDF</span><br><br><span style='font-size:14px'><b>Accuracy:</b> 76.09%</span><br><span style='font-size:14px'><b>Avg Score:</b> 76.09%</span><br><span style='font-size:14px'><b>Latency:</b> 235.1s</span>",
+        "<span style='font-size:16px'><b>bm25_vector_rff-3d78c5c9</b></span><br><br><span style='font-size:13px; color:#93c5fd'>Technology: In memory vector store | Parsing: Reducto section chunking | Combination: RFF | Query: Keyword + Semantic Search</span><br><br><span style='font-size:14px'><b>Accuracy:</b> 77.48%</span><br><span style='font-size:14px'><b>Avg Score:</b> 77.48%</span><br><span style='font-size:14px'><b>Latency:</b> 396.7s</span>",
+        "<span style='font-size:16px'><b>more-updates-stemmer-negative-keywords</b></span><br><br><span style='font-size:13px; color:#93c5fd'>Technology: In memory vector store | Stemming: PorterStemmer | Note: Add negative keywords</span><br><br><span style='font-size:14px'><b>Accuracy:</b> 80.55%</span><br><span style='font-size:14px'><b>Avg Score:</b> 80.55%</span><br><span style='font-size:14px'><b>Latency:</b> 52.6s</span>",
+        "<span style='font-size:16px'><b>neighbour-es-pypdf-chunk-e7248cfa</b></span><br><br><span style='font-size:13px; color:#93c5fd'>Technology: Opensearch ES | Parsing: PyPDF Fixed chunking(existing Doc Search) | Stemming: None | Combination: RFF | Query: Keyword + Key phrase + Semantic Search</span><br><br><span style='font-size:14px'><b>Accuracy:</b> 84.21%</span><br><span style='font-size:14px'><b>Avg Score:</b> 85.40%</span><br><span style='font-size:14px'><b>Latency:</b> 97.3s</span><br><span style='font-size:14px'><b>Chunk Accuracy:</b> 91.63%</span>",
+        "<span style='font-size:16px'><b>v4_8_es_reducto_section_chunking_k_5-e2fbdf19</b></span><br><br><span style='font-size:13px; color:#93c5fd'>Technology: Opensearch ES | Parsing: Reducto section chunking(k=5) | Stemming: None | Combination: RFF | Query: Keyword + Key phrase + Semantic Search</span><br><br><span style='font-size:14px'><b>Accuracy:</b> 85.92%</span><br><span style='font-size:14px'><b>Avg Score:</b> 87.05%</span><br><span style='font-size:14px'><b>Latency:</b> 78.4s</span><br><span style='font-size:14px'><b>Chunk Accuracy:</b> 96.94%</span>",
+        "<span style='font-size:16px'><b>v4_10-e1c13461</b></span><br><br><span style='font-size:13px; color:#93c5fd'>Technology: In memory vector store | Parsing: Reducto section chunking | Stemming: PorterStemmer | Combination: RFF | Query: Keyword + Key phrase + Semantic Search</span><br><br><span style='font-size:14px'><b>Accuracy:</b> 86.54%</span><br><span style='font-size:14px'><b>Avg Score:</b> 87.40%</span><br><span style='font-size:14px'><b>Latency:</b> 121.6s</span><br><span style='font-size:14px'><b>Chunk Accuracy:</b> 97.08%</span>",
+      ];
+      const urls = [
+        "https://langsmith.langchain.ziphq.net/o/8bbf9b31-eeef-404e-be80-30c5fc7dfcfd/datasets/771a2701-e628-44df-baf7-b23c09dae3bc/compare?selectedSessions=40e0b13a-432d-4c6e-9472-3c567014937a&baseline=undefined",
+        "https://langsmith.langchain.ziphq.net/o/8bbf9b31-eeef-404e-be80-30c5fc7dfcfd/datasets/771a2701-e628-44df-baf7-b23c09dae3bc/compare?selectedSessions=288fcde0-35fb-4211-9476-d8e164def2c5&baseline=undefined",
+        "https://langsmith.langchain.ziphq.net/o/8bbf9b31-eeef-404e-be80-30c5fc7dfcfd/datasets/771a2701-e628-44df-baf7-b23c09dae3bc/compare?selectedSessions=096cf35e-7203-4cb3-a658-7fedb7c53905&baseline=undefined",
+        "https://langsmith.langchain.ziphq.net/o/8bbf9b31-eeef-404e-be80-30c5fc7dfcfd/datasets/771a2701-e628-44df-baf7-b23c09dae3bc/compare?selectedSessions=f0502448-1d7e-46f5-8d76-ac433ff79ad6&baseline=undefined",
+        "https://langsmith.langchain.ziphq.net/o/8bbf9b31-eeef-404e-be80-30c5fc7dfcfd/datasets/771a2701-e628-44df-baf7-b23c09dae3bc/compare?selectedSessions=cabafa44-6924-45f4-8731-c34b5cf71bab&baseline=undefined",
+        "https://langsmith.langchain.ziphq.net/o/8bbf9b31-eeef-404e-be80-30c5fc7dfcfd/datasets/771a2701-e628-44df-baf7-b23c09dae3bc/compare?selectedSessions=c7c5a4d0-384c-4e3d-8d10-541fa938d6a4&baseline=undefined",
+        "https://langsmith.langchain.ziphq.net/o/8bbf9b31-eeef-404e-be80-30c5fc7dfcfd/datasets/771a2701-e628-44df-baf7-b23c09dae3bc/compare?selectedSessions=11c835ae-8b0f-4fec-a48e-784fb0cabf81&baseline=undefined",
+        "https://langsmith.langchain.ziphq.net/o/8bbf9b31-eeef-404e-be80-30c5fc7dfcfd/datasets/771a2701-e628-44df-baf7-b23c09dae3bc/compare?selectedSessions=1b2d0794-df45-41b4-a155-fff6c786e45c&baseline=undefined",
+        "https://langsmith.langchain.ziphq.net/o/8bbf9b31-eeef-404e-be80-30c5fc7dfcfd/datasets/771a2701-e628-44df-baf7-b23c09dae3bc/compare?selectedSessions=271b88dd-5d66-41f5-8b41-4d9c75b34223&baseline=undefined",
+        "https://langsmith.langchain.ziphq.net/o/8bbf9b31-eeef-404e-be80-30c5fc7dfcfd/datasets/771a2701-e628-44df-baf7-b23c09dae3bc/compare?selectedSessions=2f512fab-88df-4d2f-a25d-69cb35f9aba7&baseline=undefined",
+      ];
+
+      const trace = {
+        x: names,
+        y: accuracies,
+        type: "bar",
+        hovertext: hoverTexts,
+        hoverinfo: "text",
+        textposition: "none",
+        hoverlabel: {
+          bgcolor: "#1a1a2e",
+          bordercolor: "rgba(96, 165, 250, 0.3)",
+          font: {
+            family: "Inter, sans-serif",
+            size: 14,
+            color: "#e4e4e7",
+          },
+          align: "left",
+          namelength: -1,
+        },
+        marker: {
+          color: "#60a5fa",
+          line: {
+            color: "rgba(255,255,255,0.1)",
+            width: 1,
+          },
+          cornerradius: 4,
+        },
+      };
+
+      const layout = {
+        paper_bgcolor: "transparent",
+        plot_bgcolor: "transparent",
+        font: {
+          family: "Inter, sans-serif",
+          color: "#a1a1aa",
+        },
+        xaxis: {
+          tickangle: -45,
+          tickfont: {
+            size: 10,
+          },
+          gridcolor: "rgba(255,255,255,0.03)",
+          linecolor: "rgba(255,255,255,0.06)",
+        },
+        yaxis: {
+          title: {
+            text: "Accuracy (%)",
+            font: {
+              size: 12,
+            },
+          },
+          gridcolor: "rgba(255,255,255,0.03)",
+          linecolor: "rgba(255,255,255,0.06)",
+          range: [0, 100],
+          ticksuffix: "%",
+        },
+        margin: {
+          l: 60,
+          r: 30,
+          t: 30,
+          b: 150,
+        },
+        hoverlabel: {
+          namelength: -1,
+          font: {
+            size: 14,
+          },
+        },
+        hovermode: "closest",
+      };
+
+      const config = {
+        displayModeBar: true,
+        modeBarButtonsToRemove: ["lasso2d", "select2d"],
+        displaylogo: false,
+      };
+
+      Plotly.newPlot("chart", [trace], layout, config);
+
+      // Add click handler to scroll to table row
+      document.getElementById("chart").on("plotly_click", function (data) {
+        const pointIndex = data.points[0].pointIndex;
+        const experimentName = names[pointIndex];
+        const rowId = "row-" + experimentName;
+        const row = document.getElementById(rowId);
+
+        if (row) {
+          // Remove highlight from all rows
+          document
+            .querySelectorAll("tr.highlight-row")
+            .forEach((r) => r.classList.remove("highlight-row"));
+
+          // Scroll to the row
+          row.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
+
+          // Add highlight effect after scroll
+          setTimeout(() => {
+            row.classList.add("highlight-row");
+          }, 300);
+        }
+      });
+    </script>
+  </body>
+</html>
